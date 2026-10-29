@@ -55,7 +55,7 @@
           <legend>Radius from dealership</legend>
           <div class="radius-row">
             {% for r in radius_options %}
-            <label class="pill"><input type="radio" name="radius" value="{{ r }}" {% if r == 25 %}checked{% endif %}><span>{{ r }} mi</span></label>
+            <label class="pill"><input type="radio" name="radius" value="{{ r }}" {% if r == default_radius %}checked{% endif %}><span>{{ r }} mi</span></label>
             {% endfor %}
           </div>
         </fieldset>

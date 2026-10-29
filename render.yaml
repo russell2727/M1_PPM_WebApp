@@ -6,12 +6,14 @@ services:
     region: ohio            # or oregon / virginia
     plan: starter           # starter+ required for a persistent disk; free works without one
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120 --preload
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120 --preload
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: MPLCONFIGDIR
+        value: /tmp/mpl
       - key: SECRET_KEY
         generateValue: true
       # --- data location. Default = ./data inside the repo. Uncomment the two

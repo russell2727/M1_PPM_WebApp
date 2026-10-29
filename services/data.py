@@ -85,6 +85,13 @@ def load_shoppers() -> pd.DataFrame:
         out["state"] = out["state_code"].fillna("")
     out = out.drop(columns=["state_code"])
 
+    # shrink memory: repeated strings -> categoricals (cuts RSS ~60%, matters on Render's 512 MB plan)
+    for col in ("state", "msa", "condition", "vehicle_key", "vehicle_type", "city"):
+        out[col] = out[col].astype("category")
+    out["shoppers"] = out["shoppers"].astype("int32")
+    out["lat"] = out["lat"].astype("float32")
+    out["lon"] = out["lon"].astype("float32")
+
     dropped = out["lat"].isna().sum()
     if dropped:
         log.warning("%s rows have ZIPs that could not be geocoded and will be ignored in radius searches", dropped)
@@ -115,9 +122,13 @@ def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types:
     if not center:
         raise ValueError(f"ZIP {zip_code} could not be located.")
 
-    df = load_shoppers().dropna(subset=["lat"]).copy()
-    df["distance_mi"] = _haversine(center["lat"], center["lon"], df["lat"].values, df["lon"].values)
-    df = df[df["distance_mi"] <= radius_mi]
+    base = load_shoppers()
+    dist = _haversine(center["lat"], center["lon"], base["lat"].values, base["lon"].values)
+    mask = dist <= radius_mi  # NaN lat/lon -> NaN distance -> False
+    df = base.loc[mask].copy()
+    df["distance_mi"] = dist[mask]
+    for col in ("state", "msa", "condition", "vehicle_key", "vehicle_type", "city"):
+        df[col] = df[col].astype(str)
 
     if conditions:
         df = df[df["condition"].isin([c.title() for c in conditions])]
@@ -141,8 +152,11 @@ def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types:
     by_zip["distance_mi"] = _haversine(center["lat"], center["lon"], by_zip["lat"].values, by_zip["lon"].values).round(1)
 
     # distance rings for the chart
-    bins = [0, 5, 10, 25, 50, 100, 150, 10_000]
-    labels = ["0-5", "5-10", "10-25", "25-50", "50-100", "100-150", "150+"]
+    edges = [0] + [r for r in config.RADIUS_OPTIONS if r <= radius_mi]
+    if edges[-1] < radius_mi:
+        edges.append(radius_mi)
+    bins = edges + [10_000]
+    labels = [f"{a:g}-{b:g}" for a, b in zip(edges[:-1], edges[1:])] + [f"{edges[-1]:g}+"]
     df["ring"] = pd.cut(df["distance_mi"], bins=bins, labels=labels, right=True, include_lowest=True)
     by_ring = df.groupby("ring", observed=False)["shoppers"].sum()
     by_ring = by_ring[by_ring > 0]

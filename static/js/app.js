@@ -23,11 +23,12 @@
     btn.disabled = true; btn.innerHTML = "Building your report…";
     try {
       const r = await fetch("/api/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const j = await r.json();
+      let j;
+      try { j = await r.json(); } catch { j = { ok: false, errors: { zip: `Server returned ${r.status} ${r.statusText} — check Render logs.` } }; }
       if (!j.ok) { showErrors(j.errors || { zip: "Something went wrong." }); return; }
       render(j, body);
     } catch (err) {
-      showErrors({ zip: "Network error — please try again." });
+      showErrors({ zip: "Network error: " + (err && err.message ? err.message : "request failed") });
     } finally {
       btn.disabled = false; btn.innerHTML = 'Show my market <span class="arrow">→</span>';
     }

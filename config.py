@@ -45,7 +45,8 @@ LOOKUP_COLUMNS = {
 }
 
 # Radius options shown on the form (miles)
-RADIUS_OPTIONS = [10, 25, 50, 75, 100, 150]
+RADIUS_OPTIONS = [2, 4, 6, 8, 10]
+DEFAULT_RADIUS = 10
 
 # --------------------------------------------------------------------------
 # BRAND

@@ -49,6 +49,7 @@ def index():
         "index.html",
         brand=config.BRAND,
         radius_options=config.RADIUS_OPTIONS,
+        default_radius=config.DEFAULT_RADIUS,
         vehicle_types=data.available_vehicle_types(),
         email_enabled=config.EMAIL_ENABLED,
     )
@@ -109,6 +110,15 @@ def api_report():
         "pdf_url": f"/reports/{pdf_name}",
         "emailed": emailed,
     })
+
+
+@app.errorhandler(Exception)
+def _json_errors(e):
+    """Never let /api/* fall back to an HTML 500 page — the front end expects JSON."""
+    if request.path.startswith("/api/"):
+        log.exception("Unhandled error on %s", request.path)
+        return jsonify({"ok": False, "errors": {"zip": f"Server error: {type(e).__name__}: {e}"}}), 500
+    raise e
 
 
 @app.get("/reports/<path:filename>")
