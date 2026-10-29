@@ -52,6 +52,7 @@
     $("#r-title").textContent = `${fmt(r.total_shoppers)} in-market shoppers within ${r.radius_mi} miles of ${body.dealership}`;
     $("#r-sub").textContent = `${c.city}, ${c.state} ${c.zip} · ${(body.condition.length ? body.condition.join(" & ") : "New & Used")} · ${r.zip_count} ZIP codes`;
     $("#pdf-link").href = j.pdf_url;
+    $("#map-link").hidden = !j.map_url; if (j.map_url) $("#map-link").href = j.map_url;
     $("#email-note").textContent = j.emailed ? `A copy was emailed to ${body.email}.` : "";
     $("#k-total").textContent = fmt(r.total_shoppers);
     $("#k-new").textContent = fmt(bc.New);
@@ -95,6 +96,8 @@
 
   function drawMap(r, c, body) {
     if (typeof L === "undefined") return;
+    $("#map-title").textContent = `${fmt(r.total_shoppers)} in-market shoppers within ${r.radius_mi} miles of ${body.dealership}`;
+    $("#map-sub").textContent = `${c.city}, ${c.state} ${c.zip} · ${r.zip_count} ZIP codes · top ${Math.min(r.map_points.length, 500)} shown`;
     if (!map) {
       map = L.map("map", { scrollWheelZoom: false });
       L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 18 }).addTo(map);
@@ -102,15 +105,28 @@
     if (layer) layer.remove();
     layer = L.layerGroup().addTo(map);
     const radiusM = r.radius_mi * 1609.34;
-    const max = Math.max(...r.map_points.map((p) => p.shoppers), 1);
-    r.map_points.forEach((p) => {
-      if (p.lat == null || p.lon == null) return;
-      L.circleMarker([p.lat, p.lon], { radius: 4 + 14 * Math.sqrt(p.shoppers / max), color: B.blue, weight: 1, fillColor: B.blue, fillOpacity: 0.35 })
-        .bindTooltip(`<b>${p.zip}</b> ${p.city || ""}<br>${fmt(p.shoppers)} shoppers`).addTo(layer);
+    const pts = r.map_points.filter((p) => p.lat != null && p.lon != null);
+    const max = Math.max(...pts.map((p) => p.shoppers), 1);
+
+    // shaded search area + ring
+    L.circle([c.lat, c.lon], { radius: radiusM, color: B.navy, weight: 2, dashArray: "8 6", fillColor: B.blue, fillOpacity: 0.06 }).addTo(layer);
+
+    // shopper bubbles, scaled by sqrt(volume); labels on the biggest
+    pts.forEach((p, i) => {
+      const rad = 6 + 26 * Math.sqrt(p.shoppers / max);
+      L.circleMarker([p.lat, p.lon], { radius: rad, color: B.blue, weight: 1.5, fillColor: B.blue, fillOpacity: 0.38 })
+        .bindTooltip(`<b>${p.zip}</b> ${p.city || ""}<br>${fmt(p.shoppers)} in-market shoppers`).addTo(layer);
+      if (i < 10 && rad > 14) {
+        L.marker([p.lat, p.lon], { icon: L.divIcon({ className: "", html: `<div class="bubble-label">${p.zip}<br>${fmt(p.shoppers)}</div>`, iconSize: [60, 24], iconAnchor: [30, 12] }), interactive: false }).addTo(layer);
+      }
     });
-    L.circle([c.lat, c.lon], { radius: radiusM, color: B.navy, weight: 1.5, dashArray: "6 6", fill: false }).addTo(layer);
-    L.marker([c.lat, c.lon]).bindTooltip(`<b>${body.dealership}</b>`).addTo(layer);
-    map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2), { padding: [20, 20] });
+
+    // dealership pin + label
+    L.marker([c.lat, c.lon], { icon: L.divIcon({ className: "", html: '<div class="dealer-pin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }), zIndexOffset: 1000 })
+      .bindTooltip(`<b>${body.dealership}</b><br>${c.city}, ${c.state} ${c.zip}`).addTo(layer);
+    L.marker([c.lat, c.lon], { icon: L.divIcon({ className: "", html: `<div class="dealer-label">${body.dealership}</div>`, iconSize: [0, 0], iconAnchor: [-14, 30] }), interactive: false, zIndexOffset: 1000 }).addTo(layer);
+
+    map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2.3), { padding: [10, 10] });
     setTimeout(() => map.invalidateSize(), 50);
   }
 

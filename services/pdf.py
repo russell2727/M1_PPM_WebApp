@@ -20,6 +20,7 @@ from reportlab.platypus import (Image, Paragraph, SimpleDocTemplate, Spacer, Tab
                                 TableStyle, KeepTogether, CondPageBreak)
 
 import config
+from services import map as market_map
 
 B = config.BRAND
 NAVY = colors.HexColor(B["navy"])
@@ -125,6 +126,14 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
     ]))
     story += [tiles, Spacer(1, 6)]
+
+    # ---- market map
+    try:
+        png = market_map.market_map_png(result, prospect["dealership"])
+        story.append(KeepTogether([Paragraph(f"Market Map — {int(result['radius_mi'])} Miles Around {prospect['dealership']}", h2),
+                                   Image(io.BytesIO(png), width=7.1 * inch, height=5.68 * inch)]))
+    except Exception:  # noqa: BLE001
+        import logging; logging.getLogger(__name__).exception("market map failed; PDF continues without it")
 
     # ---- charts
     story.append(Paragraph("Shoppers by Vehicle Type", h2))

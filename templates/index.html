@@ -96,11 +96,23 @@
       <div class="kpi"><div class="n" id="k-zips">0</div><div class="l">ZIP codes covered</div></div>
     </div>
 
+    <div class="card map-card">
+      <div class="map-head">
+        <div><h3 id="map-title">Market map</h3><p class="muted" id="map-sub"></p></div>
+        <div class="legend">
+          <span><i class="lg-star"></i> Dealership</span>
+          <span><i class="lg-ring"></i> Search radius</span>
+          <span><i class="lg-bubble"></i> In-market shoppers (size = volume)</span>
+          <a id="map-link" class="fine" target="_blank" rel="noopener" hidden>Download map image</a>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
     <div class="charts">
       <div class="card"><h3>Shoppers by vehicle type</h3><canvas id="c-type" height="260"></canvas></div>
       <div class="card"><h3>New vs Used</h3><canvas id="c-cond" height="260"></canvas></div>
       <div class="card span2"><h3>Shoppers by distance from dealership</h3><canvas id="c-ring" height="180"></canvas></div>
-      <div class="card span2"><h3>Where they are</h3><div id="map"></div></div>
       <div class="card span2" id="msa-card" hidden>
         <h3>Metro areas represented</h3>
         <table class="tbl" id="t-msa"><thead><tr><th>MSA</th><th class="r">Shoppers</th><th class="r">% of market</th></tr></thead><tbody></tbody></table>
