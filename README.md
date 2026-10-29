@@ -76,8 +76,8 @@ ZIP → lat/long geocoding uses the `zipcodes` package (42k US ZIPs bundled, no 
 ## 2. Run locally
 
 ```bash
-git clone https://github.com/russell2727/M1_PPM_WebApp.git
-cd M1_PPM_WebApp
+git clone https://github.com/russell2727/m1-auto-dashboard.git
+cd m1-auto-dashboard
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # optional: SMTP settings
@@ -88,7 +88,7 @@ python app.py                   # http://localhost:5000
 
 ## 3. Deploy to Render
 
-1. Push the repo to GitHub (`russell2727/M1_PPM_WebApp`).
+1. Push the repo to GitHub (`russell2727/m1-auto-dashboard`).
 2. Render → **New → Blueprint** → select the repo. `render.yaml` provisions the web service.
 3. In the service's **Environment** tab, set the secrets:
    - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` — SendGrid (`smtp.sendgrid.net` / `apikey` / your API key), Postmark, or Google Workspace app password.
