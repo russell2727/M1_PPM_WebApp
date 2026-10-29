@@ -108,7 +108,23 @@ add a HubSpot Forms API call in `app._record_lead()`.
 
 ---
 
-## 4. Branding
+## 4. Google Maps keys
+
+The dashboard uses Google Maps (JavaScript API) on screen and the Maps Static API for the
+PDF map. Without keys it falls back to Leaflet + CARTO tiles automatically.
+
+1. console.cloud.google.com → create project `m1-ppm-webapp` → **Billing** → link a billing account
+   (required even on the free tier; Google's monthly free usage covers this app's volume).
+2. **APIs & Services → Library** → enable **Maps JavaScript API** and **Maps Static API**.
+3. **Credentials → Create credentials → API key**, twice:
+   - Browser key → Application restrictions: *Websites* → add `https://<service>.onrender.com/*` and your
+     custom domain; API restrictions: *Maps JavaScript API* only. → `GOOGLE_MAPS_JS_KEY`
+   - Server key → Application restrictions: *None* (Render IPs rotate); API restrictions: *Maps Static API*
+     only. → `GOOGLE_MAPS_STATIC_KEY`
+4. Render → Environment → set both keys → Save (auto-redeploys).
+5. Optional: Map Management → create a Map ID with a custom style → `GOOGLE_MAP_ID`.
+
+## 5. Branding
 
 - Logo: drop your PNG at `static/img/m1-logo.png` (header + PDF pick it up automatically; a text wordmark shows until then).
 - Colors: edit `BRAND` in `config.py`. The browser, the charts and the PDF all read from that one dict.
@@ -116,7 +132,7 @@ add a HubSpot Forms API call in `app._record_lead()`.
 
 ---
 
-## 5. Project layout
+## 6. Project layout
 
 ```
 app.py                  Flask routes: / (form+dashboard), POST /api/report, /reports/<pdf>, /healthz

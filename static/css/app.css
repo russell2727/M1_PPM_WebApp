@@ -77,6 +77,7 @@ legend small{font-weight:400;color:var(--gray)}
 .lg-bubble{background:var(--blue);opacity:.45;border-radius:50%}
 .dealer-pin{background:var(--orange);border:2px solid var(--navy);border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:22px;height:22px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .dealer-label{background:#fff;border:1px solid var(--navy);border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px;color:var(--navy);white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.gm-dealer-label{transform:translateY(-34px);background:#fff;border:1px solid var(--navy);border-radius:6px;padding:2px 8px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
 .bubble-label{font-size:10px;font-weight:700;color:var(--navy);text-align:center;line-height:1.1;pointer-events:none}
 
 .tbl{width:100%;border-collapse:collapse;font-size:14px}

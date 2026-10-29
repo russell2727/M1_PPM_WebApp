@@ -20,6 +20,10 @@ services:
       # lines below (and the disk block) to read from a persistent disk instead.
       # - key: DATA_DIR
       #   value: /var/data
+      - key: GOOGLE_MAPS_JS_KEY
+        sync: false
+      - key: GOOGLE_MAPS_STATIC_KEY
+        sync: false
       - key: OUTPUT_DIR
         value: /tmp/m1-output          # switch to /var/data/output if you mount the disk
       # --- email (set the secret values in the Render dashboard, not here)

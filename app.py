@@ -53,6 +53,8 @@ def index():
         default_radius=config.DEFAULT_RADIUS,
         vehicle_types=data.available_vehicle_types(),
         email_enabled=config.EMAIL_ENABLED,
+        gmaps_key=config.GOOGLE_MAPS_JS_KEY,
+        gmaps_map_id=config.GOOGLE_MAP_ID,
     )
 
 

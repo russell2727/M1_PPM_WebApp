@@ -6,7 +6,7 @@
 <title>{{ brand.company }} — In-Market Auto Shoppers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% if not gmaps_key %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 <style>
   :root{
@@ -135,8 +135,13 @@
 <footer class="foot wrap">© <span id="yr"></span> {{ brand.company }} · {{ brand.website }}</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% if gmaps_key %}
+<script>window.M1_GMAPS = { key: {{ gmaps_key | tojson }}, mapId: {{ gmaps_map_id | tojson }} };</script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ gmaps_key }}&loading=async&libraries=marker,geometry&v=weekly"></script>
+{% else %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>window.M1_COLORS = {{ brand.chart | tojson }}; window.M1_BRAND = {{ {'navy': brand.navy, 'blue': brand.blue, 'teal': brand.teal, 'gray': brand.gray} | tojson }};</script>
+{% endif %}
+<script>window.M1_COLORS = {{ brand.chart | tojson }}; window.M1_BRAND = {{ {'navy': brand.navy, 'blue': brand.blue, 'teal': brand.teal, 'gray': brand.gray, 'orange': brand.orange} | tojson }};</script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

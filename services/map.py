@@ -51,8 +51,38 @@ def _fetch_tile(z, x, y) -> Image.Image | None:
         return None
 
 
+def _google_static(center, radius_mi):
+    """Google Maps Static API basemap. Returns (image, extent in tile units, zoom) or None."""
+    key = config.GOOGLE_MAPS_STATIC_KEY
+    if not key:
+        return None
+    w, h, scale = 640, 512, 2
+    r_m = radius_mi * 1609.34
+    for z in range(16, 6, -1):
+        m_per_px = 40075016.686 * math.cos(math.radians(center["lat"])) / (256 * 2 ** z)
+        if r_m / m_per_px * 1.3 <= min(w, h) / 2:
+            break
+    url = ("https://maps.googleapis.com/maps/api/staticmap?"
+           f"center={center['lat']},{center['lon']}&zoom={z}&size={w}x{h}&scale={scale}&maptype=roadmap"
+           "&style=feature:poi|visibility:off&style=feature:transit|visibility:off&format=png"
+           f"&key={key}")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "M1Data-InMarket/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            im = Image.open(io.BytesIO(r.read())).convert("RGB")
+    except Exception as e:  # noqa: BLE001
+        log.warning("Google static map failed (%s); falling back to CARTO tiles", e)
+        return None
+    cx, cy = _latlon_to_tile(center["lat"], center["lon"], z)
+    half_w, half_h = w / 2 / 256, h / 2 / 256     # tile units (scale only changes pixel density)
+    return im, (cx - half_w, cy - half_h, cx + half_w, cy + half_h), z
+
+
 def _basemap(center, radius_mi, px=1200):
     """Return (image, extent_tiles=(x0,y0,x1,y1 in tile units), zoom) or None."""
+    g = _google_static(center, radius_mi)
+    if g:
+        return g
     half_deg_lat = radius_mi / 69.0 * 1.25
     # pick zoom so the diameter spans ~ px/256 tiles
     for z in range(14, 7, -1):
@@ -93,7 +123,7 @@ def market_map_png(result: dict, dealership: str, width_px=1600) -> bytes:
     fig, ax = plt.subplots(figsize=(8, 6.4), dpi=width_px / 8)
     if bm:
         mosaic, (x0, y0, x1, y1), _ = bm
-        ax.imshow(mosaic, extent=(x0, x1, y1, y0), interpolation="bilinear", alpha=0.92)
+        ax.imshow(mosaic, extent=(x0, x1, y1, y0), interpolation="bilinear", alpha=0.95)
     else:
         ax.set_facecolor("#F4F5FA")
     ax.set_xlim(cx - r_tiles * 1.3, cx + r_tiles * 1.3)
@@ -118,7 +148,8 @@ def market_map_png(result: dict, dealership: str, width_px=1600) -> bytes:
     ax.annotate(dealership, (cx, cy), xytext=(0, 12), textcoords="offset points", ha="center", fontsize=8,
                 fontweight="bold", color=B["navy"], zorder=6,
                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=B["navy"], lw=0.8, alpha=0.95))
-    ax.text(0.01, 0.01, f"{int(radius_mi)}-mile radius  ·  bubble size = in-market shoppers  ·  © OpenStreetMap, © CARTO",
+    credit = "Map data © Google" if (bm and config.GOOGLE_MAPS_STATIC_KEY) else "© OpenStreetMap, © CARTO"
+    ax.text(0.01, 0.01, f"{int(radius_mi)}-mile radius  ·  bubble size = in-market shoppers  ·  {credit}",
             transform=ax.transAxes, fontsize=6, color=B["gray"], ha="left", va="bottom",
             bbox=dict(fc="white", ec="none", alpha=0.8, pad=2))
     ax.set_xticks([]); ax.set_yticks([])
