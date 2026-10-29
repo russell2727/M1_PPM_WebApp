@@ -1,0 +1,11 @@
+segment,vehicle_type
+SUV,SUV
+Truck,Truck
+Sedan,Sedan
+Wagon,Wagon
+Electric,Electric
+Mini-van,Minivan
+Coupe,Coupe
+Hatchback,Hatchback
+Convertible,Convertible
+Full-size,Full-Size
