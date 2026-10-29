@@ -26,7 +26,7 @@
       let j;
       try { j = await r.json(); } catch { j = { ok: false, errors: { zip: `Server returned ${r.status} ${r.statusText} — check Render logs.` } }; }
       if (!j.ok) { showErrors(j.errors || { zip: "Something went wrong." }); return; }
-      render(j, body);
+      try { render(j, body); } catch (err) { console.error(err); showErrors({ zip: "Display error: " + err.message + " (your PDF is still available)" }); $("#results").hidden = false; $("#pdf-link").href = j.pdf_url; }
     } catch (err) {
       showErrors({ zip: "Network error: " + (err && err.message ? err.message : "request failed") });
     } finally {
@@ -76,22 +76,8 @@
       labels: rings.map((k) => k + " mi"), datasets: [{ data: Object.values(r.by_ring), backgroundColor: B.teal, borderRadius: 4, maxBarThickness: 48 }],
     }, { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: "#F3F4F6" }, ticks: { callback: fmt } } } });
 
-    // --- map
-    if (!map) {
-      map = L.map("map", { scrollWheelZoom: false });
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 18 }).addTo(map);
-    }
-    if (layer) layer.remove();
-    layer = L.layerGroup().addTo(map);
-    const max = Math.max(...r.map_points.map((p) => p.shoppers), 1);
-    r.map_points.forEach((p) => {
-      L.circleMarker([p.lat, p.lon], { radius: 4 + 14 * Math.sqrt(p.shoppers / max), color: B.blue, weight: 1, fillColor: B.blue, fillOpacity: 0.35 })
-        .bindTooltip(`<b>${p.zip}</b> ${p.city || ""}<br>${fmt(p.shoppers)} shoppers`).addTo(layer);
-    });
-    L.circle([c.lat, c.lon], { radius: r.radius_mi * 1609.34, color: B.navy, weight: 1.5, dashArray: "6 6", fill: false }).addTo(layer);
-    L.marker([c.lat, c.lon]).bindTooltip(`<b>${body.dealership}</b>`).addTo(layer);
-    map.fitBounds(L.circle([c.lat, c.lon], { radius: r.radius_mi * 1609.34 }).getBounds(), { padding: [20, 20] });
-    setTimeout(() => map.invalidateSize(), 50);
+    // --- map (never fatal: charts and tables render even if tiles/Leaflet fail)
+    try { drawMap(r, c, body); } catch (e) { console.error("map", e); }
 
     // --- table
     const tb = $("#t-zips tbody"); tb.innerHTML = "";
@@ -105,6 +91,27 @@
     msa.forEach(([m, v]) => tm.insertAdjacentHTML("beforeend", `<tr><td>${m}</td><td class="r">${fmt(v)}</td><td class="r">${(100 * v / Math.max(r.total_shoppers, 1)).toFixed(1)}%</td></tr>`));
 
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function drawMap(r, c, body) {
+    if (typeof L === "undefined") return;
+    if (!map) {
+      map = L.map("map", { scrollWheelZoom: false });
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 18 }).addTo(map);
+    }
+    if (layer) layer.remove();
+    layer = L.layerGroup().addTo(map);
+    const radiusM = r.radius_mi * 1609.34;
+    const max = Math.max(...r.map_points.map((p) => p.shoppers), 1);
+    r.map_points.forEach((p) => {
+      if (p.lat == null || p.lon == null) return;
+      L.circleMarker([p.lat, p.lon], { radius: 4 + 14 * Math.sqrt(p.shoppers / max), color: B.blue, weight: 1, fillColor: B.blue, fillOpacity: 0.35 })
+        .bindTooltip(`<b>${p.zip}</b> ${p.city || ""}<br>${fmt(p.shoppers)} shoppers`).addTo(layer);
+    });
+    L.circle([c.lat, c.lon], { radius: radiusM, color: B.navy, weight: 1.5, dashArray: "6 6", fill: false }).addTo(layer);
+    L.marker([c.lat, c.lon]).bindTooltip(`<b>${body.dealership}</b>`).addTo(layer);
+    map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2), { padding: [20, 20] });
+    setTimeout(() => map.invalidateSize(), 50);
   }
 
   function mk(id, type, data, options) {
