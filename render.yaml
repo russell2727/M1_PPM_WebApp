@@ -20,9 +20,16 @@ services:
       # lines below (and the disk block) to read from a persistent disk instead.
       # - key: DATA_DIR
       #   value: /var/data
-      - key: GOOGLE_MAPS_JS_KEY
+      # --- lead notifications (optional; set values in the dashboard)
+      - key: NOTIFY_EMAILS
+        value: sales@m1-data.com
+      - key: HUBSPOT_TOKEN
         sync: false
-      - key: GOOGLE_MAPS_STATIC_KEY
+      - key: PUSHOVER_USER
+        sync: false
+      - key: PUSHOVER_TOKEN
+        sync: false
+      - key: SLACK_WEBHOOK
         sync: false
       - key: OUTPUT_DIR
         value: /tmp/m1-output          # switch to /var/data/output if you mount the disk

@@ -66,20 +66,6 @@ legend small{font-weight:400;color:var(--gray)}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:720px){.charts{grid-template-columns:1fr}}
 .charts h3{margin:0 0 12px;font-size:14px;font-weight:700;color:#374151}
-#map{height:520px;border-radius:10px;z-index:0}
-.map-card{margin-bottom:14px}
-.map-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:12px}
-.map-head h3{margin:0 0 2px}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#374151;align-items:center}
-.legend i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
-.lg-star{background:var(--orange);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
-.lg-ring{border:2px dashed var(--navy);border-radius:50%}
-.lg-bubble{background:var(--blue);opacity:.45;border-radius:50%}
-.dealer-pin{background:var(--orange);border:2px solid var(--navy);border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:22px;height:22px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.dealer-label{background:#fff;border:1px solid var(--navy);border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px;color:var(--navy);white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15)}
-.gm-dealer-label{transform:translateY(-34px);background:#fff;border:1px solid var(--navy);border-radius:6px;padding:2px 8px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
-.bubble-label{font-size:10px;font-weight:700;color:var(--navy);text-align:center;line-height:1.1;pointer-events:none}
-
 .tbl{width:100%;border-collapse:collapse;font-size:14px}
 .tbl th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--gray);padding:8px 10px;border-bottom:1px solid #E5E7EB}
 .tbl td{padding:9px 10px;border-bottom:1px solid #F3F4F6;font-variant-numeric:tabular-nums}

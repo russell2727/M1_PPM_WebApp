@@ -67,16 +67,6 @@ BRAND = {
 }
 
 # --------------------------------------------------------------------------
-# GOOGLE MAPS (set as Render environment variables)
-#   GOOGLE_MAPS_JS_KEY     browser key, restricted by HTTP referrer -> Maps JavaScript API
-#   GOOGLE_MAPS_STATIC_KEY server key, restricted to Maps Static API (used for the PDF map)
-#   Leave blank and the app falls back to Leaflet/CARTO automatically.
-# --------------------------------------------------------------------------
-GOOGLE_MAPS_JS_KEY     = os.getenv("GOOGLE_MAPS_JS_KEY", "")
-GOOGLE_MAPS_STATIC_KEY = os.getenv("GOOGLE_MAPS_STATIC_KEY", GOOGLE_MAPS_JS_KEY)
-GOOGLE_MAP_ID          = os.getenv("GOOGLE_MAP_ID", "")   # optional cloud-styled map id
-
-# --------------------------------------------------------------------------
 # EMAIL (set as Render environment variables; leave blank to disable)
 # --------------------------------------------------------------------------
 SMTP_HOST     = os.getenv("SMTP_HOST", "")
@@ -86,6 +76,22 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 MAIL_FROM     = os.getenv("MAIL_FROM", "reports@m1-data.com")
 MAIL_BCC      = os.getenv("MAIL_BCC", "")   # e.g. sales@m1-data.com to get a copy of every lead
 EMAIL_ENABLED = bool(SMTP_HOST and SMTP_USER and SMTP_PASSWORD)
+
+# --------------------------------------------------------------------------
+# LEAD NOTIFICATIONS (all optional; each channel activates when its vars are set)
+# --------------------------------------------------------------------------
+# Internal "new lead" email (separate from the prospect's report email); comma-separated
+NOTIFY_EMAILS   = [e.strip() for e in os.getenv("NOTIFY_EMAILS", "").split(",") if e.strip()]
+# HubSpot private-app token (scopes: crm.objects.contacts.write, crm.objects.contacts.read,
+# crm.schemas.contacts.write, crm.objects.notes.write)  -> creates/updates the contact + logs a note
+HUBSPOT_TOKEN   = os.getenv("HUBSPOT_TOKEN", "")
+HUBSPOT_OWNER_ID = os.getenv("HUBSPOT_OWNER_ID", "")   # optional: assign the contact to a rep
+# Push: Pushover (user key + app token) and/or Slack incoming webhook
+PUSHOVER_USER   = os.getenv("PUSHOVER_USER", "")
+PUSHOVER_TOKEN  = os.getenv("PUSHOVER_TOKEN", "")
+SLACK_WEBHOOK   = os.getenv("SLACK_WEBHOOK", "")
+# Public base URL of this app, used to build report links in notifications
+PUBLIC_URL      = os.getenv("PUBLIC_URL", os.getenv("RENDER_EXTERNAL_URL", "")).rstrip("/")
 
 # Where generated PDFs and lead records are written (ephemeral on Render
 # unless DATA_DIR points at a persistent disk)

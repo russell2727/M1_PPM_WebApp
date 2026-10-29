@@ -108,21 +108,23 @@ add a HubSpot Forms API call in `app._record_lead()`.
 
 ---
 
-## 4. Google Maps keys
+## 4. Lead notifications
 
-The dashboard uses Google Maps (JavaScript API) on screen and the Maps Static API for the
-PDF map. Without keys it falls back to Leaflet + CARTO tiles automatically.
+Every report submission fires, in the background, whichever channels have credentials set:
 
-1. console.cloud.google.com → create project `m1-ppm-webapp` → **Billing** → link a billing account
-   (required even on the free tier; Google's monthly free usage covers this app's volume).
-2. **APIs & Services → Library** → enable **Maps JavaScript API** and **Maps Static API**.
-3. **Credentials → Create credentials → API key**, twice:
-   - Browser key → Application restrictions: *Websites* → add `https://<service>.onrender.com/*` and your
-     custom domain; API restrictions: *Maps JavaScript API* only. → `GOOGLE_MAPS_JS_KEY`
-   - Server key → Application restrictions: *None* (Render IPs rotate); API restrictions: *Maps Static API*
-     only. → `GOOGLE_MAPS_STATIC_KEY`
-4. Render → Environment → set both keys → Save (auto-redeploys).
-5. Optional: Map Management → create a Map ID with a custom style → `GOOGLE_MAP_ID`.
+| Channel | Env vars | What happens |
+|---|---|---|
+| **HubSpot** | `HUBSPOT_TOKEN` (private app), optional `HUBSPOT_OWNER_ID` | Contact created or updated by email (name, company, ZIP) with eight `ppm_*` properties (dealership, radius, inventory, total shoppers, top vehicle type, report URL, timestamp — auto-created on first run), plus a Note on the contact timeline with the full summary |
+| **Email** | `NOTIFY_EMAILS` (comma-separated) + SMTP vars | Internal "New PPM lead" email with the PDF attached |
+| **Push** | `PUSHOVER_USER` + `PUSHOVER_TOKEN` and/or `SLACK_WEBHOOK` | Phone push (Pushover) and/or a Slack card with an "Open PDF report" button |
+
+Set `PUBLIC_URL` (e.g. `https://shoppers.m1-data.com`) so the report links in notifications are absolute;
+on Render this defaults to `RENDER_EXTERNAL_URL` automatically.
+
+### HubSpot private app
+HubSpot → Settings → Integrations → **Private Apps** → Create → scopes:
+`crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.schemas.contacts.write`,
+`crm.objects.notes.write` → copy the token → Render env `HUBSPOT_TOKEN`.
 
 ## 5. Branding
 

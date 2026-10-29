@@ -6,7 +6,6 @@
 <title>{{ brand.company }} — In-Market Auto Shoppers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-{% if not gmaps_key %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 <style>
   :root{
@@ -96,19 +95,6 @@
       <div class="kpi"><div class="n" id="k-zips">0</div><div class="l">ZIP codes covered</div></div>
     </div>
 
-    <div class="card map-card">
-      <div class="map-head">
-        <div><h3 id="map-title">Market map</h3><p class="muted" id="map-sub"></p></div>
-        <div class="legend">
-          <span><i class="lg-star"></i> Dealership</span>
-          <span><i class="lg-ring"></i> Search radius</span>
-          <span><i class="lg-bubble"></i> In-market shoppers (size = volume)</span>
-          <a id="map-link" class="fine" target="_blank" rel="noopener" hidden>Download map image</a>
-        </div>
-      </div>
-      <div id="map"></div>
-    </div>
-
     <div class="charts">
       <div class="card"><h3>Shoppers by vehicle type</h3><canvas id="c-type" height="260"></canvas></div>
       <div class="card"><h3>New vs Used</h3><canvas id="c-cond" height="260"></canvas></div>
@@ -135,12 +121,6 @@
 <footer class="foot wrap">© <span id="yr"></span> {{ brand.company }} · {{ brand.website }}</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-{% if gmaps_key %}
-<script>window.M1_GMAPS = { key: {{ gmaps_key | tojson }}, mapId: {{ gmaps_map_id | tojson }} };</script>
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ gmaps_key }}&loading=async&libraries=marker,geometry&v=weekly"></script>
-{% else %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-{% endif %}
 <script>window.M1_COLORS = {{ brand.chart | tojson }}; window.M1_BRAND = {{ {'navy': brand.navy, 'blue': brand.blue, 'teal': brand.teal, 'gray': brand.gray, 'orange': brand.orange} | tojson }};</script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
