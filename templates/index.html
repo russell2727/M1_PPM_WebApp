@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ brand.company }} — In-Market Auto Shoppers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+<style>
+  :root{
+    --navy:{{ brand.navy }}; --blue:{{ brand.blue }}; --teal:{{ brand.teal }};
+    --orange:{{ brand.orange }}; --gray:{{ brand.gray }}; --light:{{ brand.light }};
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="/">
+      <img src="{{ url_for('static', filename='img/m1-logo.png') }}" alt="{{ brand.company }}"
+           onerror="this.style.display='none';document.getElementById('wordmark').style.display='inline-flex'">
+      <span id="wordmark" class="wordmark" style="display:none"><b>M1</b> Data &amp; Analytics</span>
+    </a>
+    <span class="tag">{{ brand.tagline }}</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>How many in-market auto shoppers are around your dealership?</h1>
+    <p>Enter your dealership ZIP, choose a radius and inventory type, and get an instant breakdown by vehicle type — plus a branded PDF sent straight to your inbox.</p>
+  </section>
+
+  <section class="card form-card">
+    <form id="lead-form" novalidate>
+      <div class="grid">
+        <label>Your name <input name="name" required placeholder="Jane Smith"><span class="err"></span></label>
+        <label>Email <input name="email" type="email" required placeholder="jane@dealership.com"><span class="err"></span></label>
+        <label>Dealership name <input name="dealership" required placeholder="Smith Chevrolet"><span class="err"></span></label>
+        <label>Dealership ZIP <input name="zip" inputmode="numeric" maxlength="5" required placeholder="33301"><span class="err"></span></label>
+      </div>
+
+      <div class="grid options">
+        <fieldset>
+          <legend>Inventory</legend>
+          <label class="chk"><input type="checkbox" name="condition" value="New" checked> New</label>
+          <label class="chk"><input type="checkbox" name="condition" value="Used" checked> Used</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Radius from dealership</legend>
+          <div class="radius-row">
+            {% for r in radius_options %}
+            <label class="pill"><input type="radio" name="radius" value="{{ r }}" {% if r == 25 %}checked{% endif %}><span>{{ r }} mi</span></label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <fieldset class="span2">
+          <legend>Vehicle types <small>(leave all unchecked for every type)</small></legend>
+          <div class="chips">
+            {% for t in vehicle_types %}
+            <label class="chip"><input type="checkbox" name="vehicle_type" value="{{ t }}"><span>{{ t }}</span></label>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="submit-btn" type="submit">Show my market <span class="arrow">→</span></button>
+        <span class="fine">{% if email_enabled %}Your PDF report will be emailed to you.{% else %}A downloadable PDF report is generated with your results.{% endif %}</span>
+      </div>
+    </form>
+  </section>
+
+  <section id="results" class="results" hidden>
+    <div class="results-head">
+      <div>
+        <h2 id="r-title"></h2>
+        <p id="r-sub" class="muted"></p>
+      </div>
+      <div class="results-actions">
+        <a id="pdf-link" class="btn ghost" target="_blank" rel="noopener">Download PDF</a>
+        <span id="email-note" class="fine"></span>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="n" id="k-total">0</div><div class="l">Total in-market shoppers</div></div>
+      <div class="kpi"><div class="n" id="k-new">0</div><div class="l">New</div></div>
+      <div class="kpi"><div class="n" id="k-used">0</div><div class="l">Used</div></div>
+      <div class="kpi"><div class="n" id="k-zips">0</div><div class="l">ZIP codes covered</div></div>
+    </div>
+
+    <div class="charts">
+      <div class="card"><h3>Shoppers by vehicle type</h3><canvas id="c-type" height="260"></canvas></div>
+      <div class="card"><h3>New vs Used</h3><canvas id="c-cond" height="260"></canvas></div>
+      <div class="card span2"><h3>Shoppers by distance from dealership</h3><canvas id="c-ring" height="180"></canvas></div>
+      <div class="card span2"><h3>Where they are</h3><div id="map"></div></div>
+      <div class="card span2">
+        <h3>Top ZIP codes</h3>
+        <table class="tbl" id="t-zips"><thead><tr><th>ZIP</th><th>City</th><th>State</th><th class="r">Miles</th><th class="r">Shoppers</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div class="cta card">
+      <h3>Ready to put this audience to work?</h3>
+      <p>{{ brand.company }} activates in-market shoppers across email, SMS, direct mail and programmatic — matched to your DMS and CRM with SmartPiXL Engage.</p>
+      <a class="btn" href="mailto:sales@m1-data.com?subject=In-Market%20Auto%20Shopper%20Activation">Talk to M1 Data</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot wrap">© <span id="yr"></span> {{ brand.company }} · {{ brand.website }}</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.M1_COLORS = {{ brand.chart | tojson }}; window.M1_BRAND = {{ {'navy': brand.navy, 'blue': brand.blue, 'teal': brand.teal, 'gray': brand.gray} | tojson }};</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

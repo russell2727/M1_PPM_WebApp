@@ -1,0 +1,40 @@
+# Render Blueprint — commit this file, then in Render: New > Blueprint > pick the repo.
+services:
+  - type: web
+    name: m1-inmarket-auto
+    runtime: python
+    region: ohio            # or oregon / virginia
+    plan: starter           # starter+ required for a persistent disk; free works without one
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120 --preload
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      # --- data location. Default = ./data inside the repo. Uncomment the two
+      # lines below (and the disk block) to read from a persistent disk instead.
+      # - key: DATA_DIR
+      #   value: /var/data
+      - key: OUTPUT_DIR
+        value: /tmp/m1-output          # switch to /var/data/output if you mount the disk
+      # --- email (set the secret values in the Render dashboard, not here)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        value: reports@m1-data.com
+      - key: MAIL_BCC
+        value: sales@m1-data.com
+    # Uncomment to keep data + leads.csv + PDFs across deploys:
+    # disk:
+    #   name: m1-data
+    #   mountPath: /var/data
+    #   sizeGB: 5
