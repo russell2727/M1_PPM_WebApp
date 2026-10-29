@@ -19,7 +19,7 @@ startup into memory and never touches them again.
 ```
 m1-auto-dashboard/
 ├── data/
-│   ├── in_market_auto_shoppers.csv    ← your shopper table
+│   ├── in_market_auto_shoppers.csv.gz ← PPM breakdown export (gzipped CSV, 1.4 MB)
 │   └── vehicle_type_lookup.csv        ← your body-style → Sedan/Truck/SUV table
 ```
 
@@ -44,24 +44,30 @@ Pick the option that matches your file size:
 
 | canonical | default header | notes |
 |---|---|---|
-| zip | `zip` | 5-digit; leading zeros are restored automatically |
-| state | `state` | optional |
-| condition | `condition` | `New` / `Used` |
-| vehicle_key | `body_style` | whatever code/field you want mapped to a vehicle type |
-| shoppers | `shopper_count` | integer count for the row |
+| zip | `zip` | 5-digit; leading zeros are restored automatically (source: Zip Code) |
+| state | `state` | optional; derived from ZIP when absent |
+| msa | `msa` | optional (source: MSA Name) — drives the "Metro areas" table |
+| condition | `condition` | `New` / `Used` (source: PPM Type) |
+| vehicle_key | `segment` | source: PPM Segment |
+| shoppers | `shopper_count` | source: Total |
 
 **vehicle_type_lookup.csv** — the table you referenced that defines Sedan / Truck / etc.
 
-| `body_style` | `vehicle_type` |
+| `segment` | `vehicle_type` |
 |---|---|
-| SDN | Sedan |
-| TRK | Truck |
 | SUV | SUV |
+| Mini-van | Minivan |
+| Full-size | Full-Size |
 
 Any `vehicle_key` not found in the lookup is bucketed as **Other**.
 
-The two files currently in `data/` are **synthetic sample data** (FL, GA, CA, TX, OH ZIPs)
-so the app runs out of the box. Replace them with the real tables.
+`data/in_market_auto_shoppers.csv.gz` is the **CountID 109671 PPM breakdown export**
+(260,912 rows · 15.0M in-market shoppers · 10 segments · New/Used). To refresh it:
+
+```bash
+python scripts/convert_export.py path/to/CountID_XXXXX_breakdown_export.xlsx
+git commit -am "refresh shopper data" && git push     # Render auto-deploys
+```
 
 ZIP → lat/long geocoding uses the `zipcodes` package (42k US ZIPs bundled, no network calls).
 

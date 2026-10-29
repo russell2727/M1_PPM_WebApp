@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent
 #   2. ./data inside the repo (the default — commit your CSVs there)
 DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data"))
 
-SHOPPERS_FILE = DATA_DIR / os.getenv("SHOPPERS_FILE", "in_market_auto_shoppers.csv")
+SHOPPERS_FILE = DATA_DIR / os.getenv("SHOPPERS_FILE", "in_market_auto_shoppers.csv.gz")
 VEHICLE_TYPE_LOOKUP_FILE = DATA_DIR / os.getenv("VEHICLE_TYPE_LOOKUP_FILE", "vehicle_type_lookup.csv")
 
 # --------------------------------------------------------------------------
@@ -29,17 +29,18 @@ VEHICLE_TYPE_LOOKUP_FILE = DATA_DIR / os.getenv("VEHICLE_TYPE_LOOKUP_FILE", "veh
 # The app only ever uses the left-hand (canonical) names internally.
 # --------------------------------------------------------------------------
 COLUMNS = {
-    "zip":          "zip",            # 5-digit ZIP of the shopper
-    "state":        "state",          # 2-letter state (optional, used for display)
-    "condition":    "condition",      # "New" or "Used"
-    "vehicle_key":  "body_style",     # the column that joins to the vehicle-type lookup
-    "shoppers":     "shopper_count",  # number of in-market shoppers in that row
+    "zip":          "zip",            # 5-digit ZIP of the shopper (source: "Zip Code")
+    "state":        "state",          # optional — not in the PPM export; derived from ZIP
+    "msa":          "msa",            # optional — MSA Name
+    "condition":    "condition",      # "New" or "Used"           (source: "PPM Type")
+    "vehicle_key":  "segment",        # joins to the vehicle-type lookup (source: "PPM Segment")
+    "shoppers":     "shopper_count",  # in-market shoppers in that row (source: "Total")
 }
 
 # Vehicle-type lookup: maps the raw value in COLUMNS["vehicle_key"] to a clean
 # category (Sedan, Truck, SUV, ...). Two columns expected:
 LOOKUP_COLUMNS = {
-    "key":   "body_style",     # must contain the same values as COLUMNS["vehicle_key"]
+    "key":   "segment",        # must contain the same values as COLUMNS["vehicle_key"]
     "type":  "vehicle_type",   # e.g. Sedan / Truck / SUV / Van / Coupe / ...
 }
 
@@ -54,14 +55,14 @@ BRAND = {
     "tagline":   "In-Market Auto Shopper Intelligence",
     "website":   "m1-data.com",
     "logo_path": BASE_DIR / "static" / "img" / "m1-logo.png",  # drop your PNG here
-    # Hex colors — swap for the official palette
-    "navy":      "#0B1F3A",
-    "blue":      "#1F6FEB",
-    "teal":      "#19C2A8",
-    "orange":    "#F5A623",
+    # Palette sampled from the M1 Data logo (indigo-blue gradient + black wordmark)
+    "navy":      "#0F1424",   # near-black, matches the wordmark
+    "blue":      "#4A5BAE",   # logo indigo-blue (primary)
+    "teal":      "#6B7DD4",   # lighter logo blue (secondary / "Used")
+    "orange":    "#F5A623",   # accent
     "gray":      "#6B7280",
-    "light":     "#F4F6FA",
-    "chart":     ["#1F6FEB", "#19C2A8", "#F5A623", "#7C3AED", "#EF4444", "#0EA5E9", "#84CC16"],
+    "light":     "#F4F5FA",
+    "chart":     ["#4A5BAE", "#A7B3E8", "#F5A623", "#0F1424", "#8B5CF6", "#0EA5E9", "#84CC16"],
 }
 
 # --------------------------------------------------------------------------

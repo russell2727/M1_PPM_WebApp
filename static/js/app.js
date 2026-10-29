@@ -98,6 +98,11 @@
       tb.insertAdjacentHTML("beforeend", `<tr><td>${z.zip}</td><td>${z.city || ""}</td><td>${z.state || ""}</td><td class="r">${z.distance_mi}</td><td class="r">${fmt(z.shoppers)}</td></tr>`);
     });
 
+    const msa = Object.entries(r.by_msa || {});
+    $("#msa-card").hidden = !msa.length;
+    const tm = $("#t-msa tbody"); tm.innerHTML = "";
+    msa.forEach(([m, v]) => tm.insertAdjacentHTML("beforeend", `<tr><td>${m}</td><td class="r">${fmt(v)}</td><td class="r">${(100 * v / Math.max(r.total_shoppers, 1)).toFixed(1)}%</td></tr>`));
+
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 

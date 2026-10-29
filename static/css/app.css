@@ -3,13 +3,13 @@ html,body{margin:0;background:var(--light);color:#111827;font-family:Inter,syste
 a{color:var(--blue)}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 
-.topbar{background:var(--navy);color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+.topbar{background:#fff;color:var(--navy);position:sticky;top:0;z-index:10;border-bottom:1px solid #E5E7EB}
 .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--navy)}
 .logo img{height:36px;width:auto}
 .wordmark{font-size:19px;letter-spacing:-.01em;gap:6px}
 .wordmark b{background:var(--blue);color:#fff;padding:2px 8px;border-radius:6px;font-weight:800}
-.tag{font-size:12.5px;color:#C7D2FE;letter-spacing:.04em;text-transform:uppercase}
+.tag{font-size:12.5px;color:var(--gray);letter-spacing:.04em;text-transform:uppercase}
 @media(max-width:600px){.tag{display:none}}
 
 .hero{padding:48px 0 20px}

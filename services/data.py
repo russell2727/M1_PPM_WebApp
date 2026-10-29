@@ -50,7 +50,8 @@ def load_shoppers() -> pd.DataFrame:
     """
     c = config.COLUMNS
     df = pd.read_csv(config.SHOPPERS_FILE, dtype=str, low_memory=False)
-    missing = [v for v in c.values() if v not in df.columns and v != c["state"]]
+    optional = {c.get("state"), c.get("msa")}
+    missing = [v for v in c.values() if v not in df.columns and v not in optional]
     if missing:
         raise ValueError(
             f"Shopper file is missing columns {missing}. "
@@ -59,7 +60,8 @@ def load_shoppers() -> pd.DataFrame:
 
     out = pd.DataFrame({
         "zip":         _norm_zip(df[c["zip"]]),
-        "state":       df[c["state"]].str.upper().str.strip() if c["state"] in df.columns else "",
+        "state":       df[c["state"]].str.upper().str.strip() if c.get("state") in df.columns else "",
+        "msa":         df[c["msa"]].fillna("").str.strip() if c.get("msa") in df.columns else "",
         "condition":   df[c["condition"]].str.strip().str.title(),
         "vehicle_key": df[c["vehicle_key"]].str.strip(),
         "shoppers":    pd.to_numeric(df[c["shoppers"]], errors="coerce").fillna(0).astype(int),
@@ -131,6 +133,9 @@ def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types:
                                    values="shoppers", aggfunc="sum", fill_value=0)
                       .reindex(by_type.index))
 
+    by_msa = df.groupby("msa")["shoppers"].sum().sort_values(ascending=False)
+    by_msa = by_msa[by_msa.index != ""].head(8)
+
     by_zip = (df.groupby(["zip", "city", "state", "lat", "lon"], dropna=False)["shoppers"].sum()
                 .reset_index().sort_values("shoppers", ascending=False))
     by_zip["distance_mi"] = _haversine(center["lat"], center["lon"], by_zip["lat"].values, by_zip["lon"].values).round(1)
@@ -152,6 +157,7 @@ def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types:
         "by_condition": {k: int(v) for k, v in by_condition.items()},
         "by_type_condition": {t: {c: int(v) for c, v in row.items()} for t, row in by_type_cond.iterrows()},
         "by_ring": {str(k): int(v) for k, v in by_ring.items() if v > 0},
+        "by_msa": {k: int(v) for k, v in by_msa.items()},
         "top_zips": by_zip.head(25).to_dict(orient="records"),
         "map_points": by_zip[["zip", "city", "lat", "lon", "shoppers"]].head(500).to_dict(orient="records"),
     }

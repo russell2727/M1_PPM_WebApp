@@ -17,7 +17,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (Image, Paragraph, SimpleDocTemplate, Spacer, Table,
-                                TableStyle, KeepTogether)
+                                TableStyle, KeepTogether, CondPageBreak)
 
 import config
 
@@ -148,12 +148,20 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
     for z in result["top_zips"][:20]:
         rows.append([z["zip"], str(z.get("city") or ""), str(z.get("state") or ""), f"{z['distance_mi']:.1f}", f"{int(z['shoppers']):,}"])
     tbl = Table(rows, colWidths=[0.9 * inch, 2.9 * inch, 0.8 * inch, 0.9 * inch, 1.6 * inch], repeatRows=1)
-    tbl.setStyle(_table_style(len(rows), total_row=False))
-    story.append(KeepTogether([Paragraph("Top ZIP Codes by Shopper Volume", h2), tbl]))
+    st = _table_style(len(rows), total_row=False); st.add("ALIGN", (1, 0), (2, -1), "LEFT"); tbl.setStyle(st)
+    story += [CondPageBreak(2.2 * inch), Paragraph("Top ZIP Codes by Shopper Volume", h2), tbl]
+
+    if result.get("by_msa"):
+        rows = [["Metro Area (MSA)", "Shoppers", "% of Market"]]
+        for m, v in result["by_msa"].items():
+            rows.append([m, f"{v:,}", f"{v / tot:.1%}"])
+        tbl = Table(rows, colWidths=[4.3 * inch, 1.4 * inch, 1.4 * inch], repeatRows=1)
+        tbl.setStyle(_table_style(len(rows), total_row=False))
+        story += [CondPageBreak(1.8 * inch), Paragraph("Metro Areas Represented", h2), tbl]
 
     story += [Spacer(1, 14), Paragraph(
         f"Source: {B['company']} Automotive File. In-market shoppers are consumers showing active purchase intent "
-        f"signals within the selected radius and vehicle condition. Counts are de-duplicated at the household level. "
+        f"signals within the selected radius and vehicle condition. Counts reflect the M1 Data PPM (Purchase Propensity Model) automotive file. "
         f"Contact {B['company']} to activate this audience across email, SMS, direct mail, and programmatic channels.", small)]
 
     doc.build(story, onFirstPage=_footer, onLaterPages=_footer)
