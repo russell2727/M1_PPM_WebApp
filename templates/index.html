@@ -52,6 +52,12 @@
 
       <div class="grid options">
         <fieldset>
+          <legend>Inventory</legend>
+          <label class="chk disabled" title="New-vehicle shopper counts are available on request from M1 Data"><input type="checkbox" value="New" disabled> New <small>coming soon</small></label>
+          <label class="chk locked"><input type="checkbox" name="condition" value="Used" checked onclick="return false"> Used</label>
+        </fieldset>
+
+        <fieldset>
           <legend>Radius from dealership</legend>
           <div class="radius-row">
             {% for r in radius_options %}

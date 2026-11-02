@@ -35,6 +35,9 @@ legend{font-weight:600;font-size:13px;color:#374151;margin-bottom:10px;width:100
 legend small{font-weight:400;color:var(--gray)}
 .chk{flex-direction:row;align-items:center;gap:8px;font-weight:500;font-size:14px;padding:9px 14px;border:1px solid #D1D5DB;border-radius:9px;cursor:pointer}
 .chk input{accent-color:var(--blue);width:16px;height:16px}
+.chk.disabled{opacity:.45;cursor:not-allowed;background:#F9FAFB}
+.chk.disabled small{font-weight:400;font-size:11px;color:var(--gray);margin-left:2px}
+.chk.locked{cursor:default;border-color:var(--blue);background:color-mix(in srgb,var(--blue) 8%,#fff)}
 .radius-row,.chips{display:flex;flex-wrap:wrap;gap:8px}
 .pill input,.chip input{position:absolute;opacity:0}
 .pill span,.chip span{display:inline-block;padding:8px 14px;border:1px solid #D1D5DB;border-radius:999px;font-weight:500;font-size:14px;cursor:pointer;background:#fff;transition:.12s}
