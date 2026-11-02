@@ -122,7 +122,11 @@ the PDF map. With no keys set the app falls back to Leaflet + CARTO tiles automa
    - Server key → Application restrictions: *None* (Render egress IPs rotate); API restrictions:
      *Maps Static API* only → `GOOGLE_MAPS_STATIC_KEY`
 4. Render → Environment → set both keys → Save (auto-redeploys).
-5. Optional: Google Cloud → **Map Management → Create Map ID** with a custom style → `GOOGLE_MAP_ID`.
+5. **Geocoding API** (exact dealership location from the street address): Library → enable *Geocoding API*,
+   then Credentials → the server key → API restrictions → add *Geocoding API*. The app uses
+   `GOOGLE_MAPS_STATIC_KEY` for geocoding unless `GOOGLE_GEOCODING_KEY` is set. Without it, the count
+   centres on the ZIP centroid.
+6. Optional: Google Cloud → **Map Management → Create Map ID** with a custom style → `GOOGLE_MAP_ID`.
 
 ## 5. Lead notifications
 

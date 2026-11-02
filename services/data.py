@@ -116,11 +116,55 @@ def _haversine(lat1, lon1, lat2, lon2):
     return 2 * EARTH_RADIUS_MI * np.arcsin(np.sqrt(a))
 
 
-def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types: list[str] | None = None) -> dict:
-    """Core query used by both the dashboard and the PDF."""
-    center = geocode_zip(zip_code)
-    if not center:
+def geocode_address(street: str, city: str, state: str, zip_code: str) -> dict | None:
+    """Google Geocoding API -> exact lat/lon for the dealership. Returns None when the key is
+    unset, the address is blank, or Google can't resolve it to rooftop/range precision."""
+    import json
+    import urllib.parse
+    import urllib.request
+    key = getattr(config, "GOOGLE_GEOCODING_KEY", "")
+    if not (key and street.strip()):
+        return None
+    q = ", ".join(p for p in (street.strip(), city.strip(), f"{state.strip()} {zip_code}".strip()) if p)
+    url = "https://maps.googleapis.com/maps/api/geocode/json?" + urllib.parse.urlencode(
+        {"address": q, "components": "country:US", "key": key})
+    try:
+        with urllib.request.urlopen(url, timeout=8) as r:
+            data = json.loads(r.read())
+    except Exception as e:  # noqa: BLE001
+        log.warning("Geocoding failed for %r: %s", q, e)
+        return None
+    if data.get("status") != "OK" or not data.get("results"):
+        log.warning("Geocoding returned %s for %r", data.get("status"), q)
+        return None
+    res = data["results"][0]
+    if res["geometry"].get("location_type") not in ("ROOFTOP", "RANGE_INTERPOLATED", "GEOMETRIC_CENTER"):
+        return None
+    loc = res["geometry"]["location"]
+    comp = {t: c["short_name"] for c in res["address_components"] for t in c["types"]}
+    return {"lat": float(loc["lat"]), "lon": float(loc["lng"]),
+            "city": comp.get("locality") or comp.get("sublocality") or city, "state": comp.get("administrative_area_level_1", state),
+            "zip": comp.get("postal_code", zip_code), "formatted": res.get("formatted_address", q), "precision": "address"}
+
+
+def query(zip_code: str, radius_mi: float, conditions: list[str], vehicle_types: list[str] | None = None,
+          address: dict | None = None) -> dict:
+    """Core query used by both the dashboard and the PDF.
+    `address` = {street, city, state}; when it geocodes, the search is centred on the exact
+    dealership location, otherwise on the ZIP centroid."""
+    zc = geocode_zip(zip_code)
+    if not zc:
         raise ValueError(f"ZIP {zip_code} could not be located.")
+    center = None
+    if address and address.get("street"):
+        center = geocode_address(address["street"], address.get("city", ""), address.get("state", ""), zip_code)
+        # sanity: an address that geocodes >60 mi from its own ZIP is a bad match -> use the ZIP
+        if center and _haversine(center["lat"], center["lon"], zc["lat"], zc["lon"]) > 60:
+            log.warning("Geocoded address is far from ZIP %s; using ZIP centroid", zip_code)
+            center = None
+    if not center:
+        center = {**zc, "precision": "zip",
+                  "formatted": ", ".join(p for p in (address.get("street", "") if address else "", f"{zc['city']}, {zc['state']} {zc['zip']}") if p)}
 
     base = load_shoppers()
     dist = _haversine(center["lat"], center["lon"], base["lat"].values, base["lon"].values)

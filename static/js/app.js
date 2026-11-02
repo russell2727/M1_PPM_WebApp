@@ -17,7 +17,7 @@
     const fd = new FormData(form);
     const body = {
       name: fd.get("name"), email: fd.get("email"), dealership: fd.get("dealership"),
-      zip: fd.get("zip"), radius: fd.get("radius"),
+      zip: fd.get("zip"), street: fd.get("street"), city: fd.get("city"), state: fd.get("state"), radius: fd.get("radius"),
       condition: fd.getAll("condition"), vehicle_type: fd.getAll("vehicle_type"),
     };
     btn.disabled = true; btn.innerHTML = "Building your report…";
@@ -50,7 +50,8 @@
     const r = j.result, c = r.center, bc = r.by_condition;
     $("#results").hidden = false;
     $("#r-title").textContent = `${fmt(r.total_shoppers)} in-market shoppers within ${r.radius_mi} miles of ${body.dealership}`;
-    $("#r-sub").textContent = `${c.city}, ${c.state} ${c.zip} · ${(body.condition.length ? body.condition.join(" & ") : "New & Used")} · ${r.zip_count} ZIP codes`;
+    const where = c.formatted || `${c.city}, ${c.state} ${c.zip}`;
+    $("#r-sub").textContent = `${where} · ${c.precision === "address" ? "exact location" : "ZIP centre"} · ${(body.condition.length ? body.condition.join(" & ") : "New & Used")} · ${r.zip_count} ZIP codes`;
     $("#pdf-link").href = j.pdf_url;
     $("#map-link").hidden = !j.map_url; if (j.map_url) $("#map-link").href = j.map_url;
     $("#email-note").textContent = j.emailed ? `A copy was emailed to ${body.email}.` : "";
@@ -98,7 +99,7 @@
     if (window.M1_GMAPS && window.google && google.maps) return drawGoogleMap(r, c, body);
     if (typeof L === "undefined") return;
     $("#map-title").textContent = `${fmt(r.total_shoppers)} in-market shoppers within ${r.radius_mi} miles of ${body.dealership}`;
-    $("#map-sub").textContent = `${c.city}, ${c.state} ${c.zip} · ${r.zip_count} ZIP codes · top ${Math.min(r.map_points.length, 500)} shown`;
+    $("#map-sub").textContent = `${c.formatted || `${c.city}, ${c.state} ${c.zip}`} · ${r.zip_count} ZIP codes · top ${Math.min(r.map_points.length, 500)} shown`;
     if (!map) {
       map = L.map("map", { scrollWheelZoom: false });
       L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 18 }).addTo(map);
@@ -124,7 +125,7 @@
 
     // dealership pin + label
     L.marker([c.lat, c.lon], { icon: L.divIcon({ className: "", html: '<div class="dealer-pin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }), zIndexOffset: 1000 })
-      .bindTooltip(`<b>${body.dealership}</b><br>${c.city}, ${c.state} ${c.zip}`).addTo(layer);
+      .bindTooltip(`<b>${body.dealership}</b><br>${c.formatted || `${c.city}, ${c.state} ${c.zip}`}`).addTo(layer);
     L.marker([c.lat, c.lon], { icon: L.divIcon({ className: "", html: `<div class="dealer-label">${body.dealership}</div>`, iconSize: [0, 0], iconAnchor: [-14, 30] }), interactive: false, zIndexOffset: 1000 }).addTo(layer);
 
     map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2.1), { padding: [10, 10] });

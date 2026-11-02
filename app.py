@@ -67,6 +67,9 @@ def api_report():
         "email":      (f.get("email") or "").strip().lower(),
         "dealership": (f.get("dealership") or "").strip(),
         "zip":        (f.get("zip") or "").strip(),
+        "street":     (f.get("street") or "").strip(),
+        "city":       (f.get("city") or "").strip(),
+        "state":      (f.get("state") or "").strip().upper()[:2],
     }
     conditions = f.getlist("condition") if hasattr(f, "getlist") else (f.get("condition") or [])
     if isinstance(conditions, str):
@@ -92,7 +95,8 @@ def api_report():
         return jsonify({"ok": False, "errors": errors}), 400
 
     try:
-        result = data.query(prospect["zip"], radius, conditions, vehicle_types or None)
+        result = data.query(prospect["zip"], radius, conditions, vehicle_types or None,
+                            address={"street": prospect["street"], "city": prospect["city"], "state": prospect["state"]})
     except ValueError as e:
         return jsonify({"ok": False, "errors": {"zip": str(e)}}), 400
 
@@ -153,10 +157,11 @@ def _record_lead(prospect, radius, conditions, result, pdf_name, emailed):
     with open(config.LEADS_FILE, "a", newline="") as fh:
         w = csv.writer(fh)
         if new:
-            w.writerow(["timestamp", "name", "email", "dealership", "zip", "radius_mi", "conditions",
+            w.writerow(["timestamp", "name", "email", "dealership", "address", "zip", "precision", "radius_mi", "conditions",
                         "total_shoppers", "pdf", "emailed"])
         w.writerow([datetime.now().isoformat(timespec="seconds"), prospect["name"], prospect["email"],
-                    prospect["dealership"], prospect["zip"], radius, "|".join(conditions),
+                    prospect["dealership"], result["center"].get("formatted", ""), prospect["zip"],
+                    result["center"].get("precision", "zip"), radius, "|".join(conditions),
                     result["total_shoppers"], pdf_name, emailed])
 
 

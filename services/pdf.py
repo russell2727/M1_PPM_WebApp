@@ -105,7 +105,7 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
     story.append(Paragraph("In-Market Auto Shopper Report", h1))
     story.append(Paragraph(
         f"Prepared for <b>{prospect['name']}</b>, {prospect['dealership']} &nbsp;|&nbsp; "
-        f"{c['city']}, {c['state']} {c['zip']} &nbsp;|&nbsp; {int(result['radius_mi'])}-mile radius &nbsp;|&nbsp; {conds} &nbsp;|&nbsp; "
+        f"{c.get('formatted') or f"{c['city']}, {c['state']} {c['zip']}"} &nbsp;|&nbsp; {int(result['radius_mi'])}-mile radius &nbsp;|&nbsp; {conds} &nbsp;|&nbsp; "
         f"{datetime.now():%B %d, %Y}", sub))
 
     # ---- KPI tiles
@@ -170,7 +170,9 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
 
     story += [Spacer(1, 14), Paragraph(
         f"Source: {B['company']} Automotive File. In-market shoppers are consumers showing active purchase intent "
-        f"signals within the selected radius and vehicle condition. Counts reflect the M1 Data PPM (Purchase Propensity Model) automotive file. "
+        f"signals within the selected radius and vehicle condition. "
+        f"{'Radius measured from the dealership street address. ' if c.get('precision') == 'address' else 'Radius measured from the centre of the dealership ZIP code. '}"
+        f"Counts reflect the M1 Data PPM (Purchase Propensity Model) automotive file. "
         f"Contact {B['company']} to activate this audience across email, SMS, direct mail, and programmatic channels.", small)]
 
     doc.build(story, onFirstPage=_footer, onLaterPages=_footer)

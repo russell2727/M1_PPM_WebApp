@@ -48,7 +48,7 @@ def _summary(prospect: dict, result: dict, report_url: str) -> dict:
     bc = result["by_condition"]
     return {
         "name": prospect["name"], "email": prospect["email"], "dealership": prospect["dealership"],
-        "location": f"{c['city']}, {c['state']} {c['zip']}", "zip": c["zip"],
+        "location": c.get("formatted") or f"{c['city']}, {c['state']} {c['zip']}", "zip": c["zip"],
         "radius": int(result["radius_mi"]),
         "conditions": " & ".join(result["conditions"]) if result["conditions"] else "New & Used",
         "total": result["total_shoppers"], "new": bc.get("New", 0), "used": bc.get("Used", 0),

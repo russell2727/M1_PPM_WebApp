@@ -22,6 +22,7 @@ a{color:var(--blue)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
 .span2{grid-column:1/-1}
+.grid2{display:grid;grid-template-columns:1fr 2fr;gap:16px 20px}
 label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px;color:#374151}
 input[type=text],input[type=email],input:not([type]),input[inputmode]{font:inherit;padding:11px 13px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;transition:border-color .15s,box-shadow .15s}
 input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}

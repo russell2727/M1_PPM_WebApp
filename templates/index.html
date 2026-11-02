@@ -41,8 +41,14 @@
         <label>Your name <input name="name" required placeholder="Jane Smith"><span class="err"></span></label>
         <label>Email <input name="email" type="email" required placeholder="jane@dealership.com"><span class="err"></span></label>
         <label>Dealership name <input name="dealership" required placeholder="Smith Chevrolet"><span class="err"></span></label>
-        <label>Dealership ZIP <input name="zip" inputmode="numeric" maxlength="5" required placeholder="33301"><span class="err"></span></label>
+        <label>Street address <input name="street" autocomplete="street-address" placeholder="1234 N Federal Hwy"><span class="err"></span></label>
+        <label>City <input name="city" autocomplete="address-level2" placeholder="Fort Lauderdale"><span class="err"></span></label>
+        <div class="grid2">
+          <label>State <input name="state" autocomplete="address-level1" maxlength="2" placeholder="FL"><span class="err"></span></label>
+          <label>ZIP <input name="zip" inputmode="numeric" maxlength="5" required placeholder="33301"><span class="err"></span></label>
+        </div>
       </div>
+      <p class="fine" style="margin:10px 0 0">Street address lets us centre the count on your exact rooftop. ZIP alone uses the ZIP's centre point.</p>
 
       <div class="grid options">
         <fieldset>

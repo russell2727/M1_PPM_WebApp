@@ -75,6 +75,9 @@ BRAND = {
 GOOGLE_MAPS_JS_KEY     = os.getenv("GOOGLE_MAPS_JS_KEY", "")
 GOOGLE_MAPS_STATIC_KEY = os.getenv("GOOGLE_MAPS_STATIC_KEY", GOOGLE_MAPS_JS_KEY)
 GOOGLE_MAP_ID          = os.getenv("GOOGLE_MAP_ID", "")   # optional cloud-styled map id
+# Geocoding API key (server) -> exact dealership location from the street address.
+# Defaults to the static-maps key; that key must also allow "Geocoding API".
+GOOGLE_GEOCODING_KEY   = os.getenv("GOOGLE_GEOCODING_KEY", GOOGLE_MAPS_STATIC_KEY)
 
 # --------------------------------------------------------------------------
 # EMAIL (set as Render environment variables; leave blank to disable)
