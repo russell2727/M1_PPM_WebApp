@@ -101,11 +101,12 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
     story += [rule, Spacer(1, 12)]
 
     c = result["center"]
+    where = c.get("formatted") or f"{c['city']}, {c['state']} {c['zip']}"
     conds = " & ".join(result["conditions"]) if result["conditions"] else "New & Used"
     story.append(Paragraph("In-Market Auto Shopper Report", h1))
     story.append(Paragraph(
         f"Prepared for <b>{prospect['name']}</b>, {prospect['dealership']} &nbsp;|&nbsp; "
-        f"{c.get('formatted') or f"{c['city']}, {c['state']} {c['zip']}"} &nbsp;|&nbsp; {int(result['radius_mi'])}-mile radius &nbsp;|&nbsp; {conds} &nbsp;|&nbsp; "
+        f"{where} &nbsp;|&nbsp; {int(result['radius_mi'])}-mile radius &nbsp;|&nbsp; {conds} &nbsp;|&nbsp; "
         f"{datetime.now():%B %d, %Y}", sub))
 
     # ---- KPI tiles
