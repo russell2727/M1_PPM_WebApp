@@ -177,7 +177,11 @@
       ? new AdvancedMarkerElement({ map, position: center, content: pin, zIndex: 1001 })
       : new google.maps.Marker({ map, position: center, label: { text: body.dealership, color: B.navy, fontSize: "13px", fontWeight: "700", className: "gm-dealer-label" }, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0 }, clickable: false, zIndex: 1001 }));
 
-    map.fitBounds(new google.maps.Circle({ center, radius: radiusM * 1.05 }).getBounds(), 0);
+    // fractional zoom so the ring fills ~85% of the map height (fitBounds snaps to whole levels)
+    const h = $("#map").clientHeight || 520;
+    const mpp = (radiusM * 2 * 1.18) / h;                         // metres per pixel we need
+    const zoom = Math.log2(156543.03392 * Math.cos(c.lat * Math.PI / 180) / mpp);
+    map.setCenter(center); map.setZoom(Math.min(zoom, 18));
   }
 
   function mk(id, type, data, options) {
