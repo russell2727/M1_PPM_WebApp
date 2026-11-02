@@ -71,9 +71,7 @@ def api_report():
         "city":       (f.get("city") or "").strip(),
         "state":      (f.get("state") or "").strip().upper()[:2],
     }
-    conditions = f.getlist("condition") if hasattr(f, "getlist") else (f.get("condition") or [])
-    if isinstance(conditions, str):
-        conditions = [conditions]
+    conditions = ["Used"]   # New inventory is not offered on this form
     vehicle_types = f.getlist("vehicle_type") if hasattr(f, "getlist") else (f.get("vehicle_type") or [])
     if isinstance(vehicle_types, str):
         vehicle_types = [vehicle_types]

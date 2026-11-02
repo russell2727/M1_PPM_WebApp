@@ -39,21 +39,15 @@ def _fig_to_image(fig, width=6.5 * inch, height=3 * inch) -> Image:
 
 
 def _chart_by_type(result: dict) -> Image:
-    tc = result["by_type_condition"]
-    types = list(tc.keys())
-    conds = ["New", "Used"]
+    bt = result["by_type"]
+    types, vals = list(bt.keys()), list(bt.values())
     fig, ax = plt.subplots(figsize=(8, 3.6))
-    bottom = [0] * len(types)
-    for i, c in enumerate(conds):
-        vals = [tc[t].get(c, 0) for t in types]
-        ax.bar(types, vals, bottom=bottom, label=c, color=B["chart"][i], width=0.6)
-        bottom = [b + v for b, v in zip(bottom, vals)]
-    for i, v in enumerate(bottom):
+    ax.bar(types, vals, color=B["blue"], width=0.6)
+    for i, v in enumerate(vals):
         ax.text(i, v, f"{v:,}", ha="center", va="bottom", fontsize=8, color=B["navy"])
     ax.set_ylabel("In-market shoppers")
     ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{int(v):,}"))
     ax.spines[["top", "right"]].set_visible(False)
-    ax.legend(frameon=False)
     ax.tick_params(axis="x", labelrotation=20)
     return _fig_to_image(fig, height=3.2 * inch)
 
@@ -102,7 +96,7 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
 
     c = result["center"]
     where = c.get("formatted") or f"{c['city']}, {c['state']} {c['zip']}"
-    conds = " & ".join(result["conditions"]) if result["conditions"] else "New & Used"
+    conds = "Used inventory"
     story.append(Paragraph("In-Market Auto Shopper Report", h1))
     story.append(Paragraph(
         f"Prepared for <b>{prospect['name']}</b>, {prospect['dealership']} &nbsp;|&nbsp; "
@@ -110,12 +104,12 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
         f"{datetime.now():%B %d, %Y}", sub))
 
     # ---- KPI tiles
-    bc = result["by_condition"]
+    top = next(iter(result["by_type"]), "—")
     kpis = [
         ("Total In-Market Shoppers", f"{result['total_shoppers']:,}"),
-        ("New", f"{bc.get('New', 0):,}"),
-        ("Used", f"{bc.get('Used', 0):,}"),
+        ("Top Vehicle Type", top),
         ("ZIP Codes Covered", f"{result['zip_count']:,}"),
+        ("Avg Shoppers per ZIP", f"{round(result['total_shoppers'] / max(result['zip_count'], 1)):,}"),
     ]
     tile_rows = [[Paragraph(f"<font size=18 color='{B['navy']}'><b>{v}</b></font><br/><font size=8 color='{B['gray']}'>{k}</font>", body) for k, v in kpis]]
     tiles = Table(tile_rows, colWidths=[1.775 * inch] * 4, rowHeights=[0.8 * inch])
@@ -137,19 +131,18 @@ def build_pdf(result: dict, prospect: dict, out_path: Path) -> Path:
         import logging; logging.getLogger(__name__).exception("market map failed; PDF continues without it")
 
     # ---- charts
-    story.append(Paragraph("Shoppers by Vehicle Type", h2))
+    story.append(Paragraph("Used-Vehicle Shoppers by Vehicle Type", h2))
     story.append(_chart_by_type(result))
     if result["by_ring"]:
         story.append(KeepTogether([Paragraph("Shoppers by Distance from Dealership", h2), _chart_rings(result)]))
 
     # ---- vehicle type table
     tot = max(result["total_shoppers"], 1)
-    rows = [["Vehicle Type", "New", "Used", "Total", "% of Market"]]
-    for t, d in result["by_type_condition"].items():
-        n, u = d.get("New", 0), d.get("Used", 0)
-        rows.append([t, f"{n:,}", f"{u:,}", f"{n + u:,}", f"{(n + u) / tot:.1%}"])
-    rows.append(["Total", f"{bc.get('New', 0):,}", f"{bc.get('Used', 0):,}", f"{result['total_shoppers']:,}", "100%"])
-    tbl = Table(rows, colWidths=[2.3 * inch, 1.2 * inch, 1.2 * inch, 1.2 * inch, 1.2 * inch])
+    rows = [["Vehicle Type", "In-Market Shoppers", "% of Market"]]
+    for t, v in result["by_type"].items():
+        rows.append([t, f"{v:,}", f"{v / tot:.1%}"])
+    rows.append(["Total", f"{result['total_shoppers']:,}", "100%"])
+    tbl = Table(rows, colWidths=[3.5 * inch, 1.8 * inch, 1.8 * inch])
     tbl.setStyle(_table_style(len(rows)))
     story.append(KeepTogether([Paragraph("Vehicle Type Breakdown", h2), tbl]))
 

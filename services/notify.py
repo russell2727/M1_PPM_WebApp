@@ -45,13 +45,12 @@ _hs_props_ready = False
 def _summary(prospect: dict, result: dict, report_url: str) -> dict:
     c = result["center"]
     top = next(iter(result["by_type"]), "—")
-    bc = result["by_condition"]
     return {
         "name": prospect["name"], "email": prospect["email"], "dealership": prospect["dealership"],
         "location": c.get("formatted") or f"{c['city']}, {c['state']} {c['zip']}", "zip": c["zip"],
         "radius": int(result["radius_mi"]),
-        "conditions": " & ".join(result["conditions"]) if result["conditions"] else "New & Used",
-        "total": result["total_shoppers"], "new": bc.get("New", 0), "used": bc.get("Used", 0),
+        "conditions": "Used inventory",
+        "total": result["total_shoppers"],
         "top": f"{top} ({result['by_type'].get(top, 0):,})" if top != "—" else "—",
         "zips": result["zip_count"],
         "url": f"{config.PUBLIC_URL}{report_url}" if config.PUBLIC_URL else report_url,
@@ -133,7 +132,7 @@ def hubspot(s: dict, pdf_path: Path) -> None:
     note = (f"PPM In-Market Auto Shopper report requested\n"
             f"Dealership: {s['dealership']} ({s['location']})\n"
             f"Radius: {s['radius']} mi · {s['conditions']}\n"
-            f"In-market shoppers: {s['total']:,} (New {s['new']:,} / Used {s['used']:,}) across {s['zips']} ZIPs\n"
+            f"In-market shoppers: {s['total']:,} across {s['zips']} ZIPs\n"
             f"Top vehicle type: {s['top']}\n"
             f"Report: {s['url']}")
     _hs("POST", "/crm/v3/objects/notes", {
@@ -157,7 +156,7 @@ def internal_email(s: dict, pdf_path: Path) -> None:
         f"New in-market auto shopper report requested.\n\n"
         f"Name:        {s['name']}\nEmail:       {s['email']}\nDealership:  {s['dealership']}\n"
         f"Location:    {s['location']}\nRadius:      {s['radius']} mi · {s['conditions']}\n\n"
-        f"Shoppers:    {s['total']:,}  (New {s['new']:,} / Used {s['used']:,})\n"
+        f"Shoppers:    {s['total']:,}\n"
         f"ZIPs:        {s['zips']}\nTop type:    {s['top']}\n\n"
         f"Report:      {s['url']}\nProspect emailed: {'yes' if s['prospect_emailed'] else 'no (SMTP off)'}\n"
     )
@@ -197,7 +196,7 @@ def slack(s: dict, _pdf: Path) -> None:
                 {"type": "section", "fields": [
                     {"type": "mrkdwn", "text": f"*Contact*\n{s['name']}\n{s['email']}"},
                     {"type": "mrkdwn", "text": f"*Location*\n{s['location']}\n{s['radius']} mi · {s['conditions']}"},
-                    {"type": "mrkdwn", "text": f"*In-market shoppers*\n{s['total']:,}  (New {s['new']:,} / Used {s['used']:,})"},
+                    {"type": "mrkdwn", "text": f"*In-market shoppers*\n{s['total']:,}"},
                     {"type": "mrkdwn", "text": f"*Top vehicle type*\n{s['top']}"},
                 ]},
                 {"type": "actions", "elements": [{"type": "button", "text": {"type": "plain_text", "text": "Open PDF report"}, "url": s["url"]}]},

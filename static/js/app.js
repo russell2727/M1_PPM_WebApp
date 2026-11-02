@@ -18,7 +18,7 @@
     const body = {
       name: fd.get("name"), email: fd.get("email"), dealership: fd.get("dealership"),
       zip: fd.get("zip"), street: fd.get("street"), city: fd.get("city"), state: fd.get("state"), radius: fd.get("radius"),
-      condition: fd.getAll("condition"), vehicle_type: fd.getAll("vehicle_type"),
+      condition: ["Used"], vehicle_type: fd.getAll("vehicle_type"),
     };
     btn.disabled = true; btn.innerHTML = "Building your report…";
     try {
@@ -47,30 +47,26 @@
   }
 
   function render(j, body) {
-    const r = j.result, c = r.center, bc = r.by_condition;
+    const r = j.result, c = r.center;
     $("#results").hidden = false;
     $("#r-title").textContent = `${fmt(r.total_shoppers)} in-market shoppers within ${r.radius_mi} miles of ${body.dealership}`;
     const where = c.formatted || `${c.city}, ${c.state} ${c.zip}`;
-    $("#r-sub").textContent = `${where} · ${c.precision === "address" ? "exact location" : "ZIP centre"} · ${(body.condition.length ? body.condition.join(" & ") : "New & Used")} · ${r.zip_count} ZIP codes`;
+    $("#r-sub").textContent = `${where} · ${c.precision === "address" ? "exact location" : "ZIP centre"} · Used inventory · ${r.zip_count} ZIP codes`;
     $("#pdf-link").href = j.pdf_url;
     $("#map-link").hidden = !j.map_url; if (j.map_url) $("#map-link").href = j.map_url;
     $("#email-note").textContent = j.emailed ? `A copy was emailed to ${body.email}.` : "";
     $("#k-total").textContent = fmt(r.total_shoppers);
-    $("#k-new").textContent = fmt(bc.New);
-    $("#k-used").textContent = fmt(bc.Used);
+    const topType = Object.keys(r.by_type)[0];
+    $("#k-top").textContent = topType ? `${topType}` : "—";
     $("#k-zips").textContent = fmt(r.zip_count);
+    $("#k-avg").textContent = fmt(Math.round(r.total_shoppers / Math.max(r.zip_count, 1)));
 
-    // --- stacked bar by vehicle type
-    const types = Object.keys(r.by_type_condition);
+    // --- bar by vehicle type
+    const types = Object.keys(r.by_type);
     mk("type", "bar", {
       labels: types,
-      datasets: ["New", "Used"].map((cond, i) => ({ label: cond, data: types.map((t) => r.by_type_condition[t][cond] || 0), backgroundColor: C[i], borderRadius: 4 })),
-    }, { scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: "#F3F4F6" }, ticks: { callback: fmt } } }, plugins: { legend: { position: "bottom" } } });
-
-    // --- donut new vs used
-    mk("cond", "doughnut", {
-      labels: Object.keys(bc), datasets: [{ data: Object.values(bc), backgroundColor: C, borderWidth: 0 }],
-    }, { cutout: "68%", plugins: { legend: { position: "bottom" } } });
+      datasets: [{ data: types.map((t) => r.by_type[t]), backgroundColor: B.blue, borderRadius: 4, maxBarThickness: 56 }],
+    }, { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: "#F3F4F6" }, ticks: { callback: fmt } } } });
 
     // --- rings
     const rings = Object.keys(r.by_ring);

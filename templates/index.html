@@ -52,12 +52,6 @@
 
       <div class="grid options">
         <fieldset>
-          <legend>Inventory</legend>
-          <label class="chk"><input type="checkbox" name="condition" value="New" checked> New</label>
-          <label class="chk"><input type="checkbox" name="condition" value="Used" checked> Used</label>
-        </fieldset>
-
-        <fieldset>
           <legend>Radius from dealership</legend>
           <div class="radius-row">
             {% for r in radius_options %}
@@ -97,9 +91,9 @@
 
     <div class="kpis">
       <div class="kpi"><div class="n" id="k-total">0</div><div class="l">Total in-market shoppers</div></div>
-      <div class="kpi"><div class="n" id="k-new">0</div><div class="l">New</div></div>
-      <div class="kpi"><div class="n" id="k-used">0</div><div class="l">Used</div></div>
+      <div class="kpi"><div class="n" id="k-top">—</div><div class="l">Top vehicle type</div></div>
       <div class="kpi"><div class="n" id="k-zips">0</div><div class="l">ZIP codes covered</div></div>
+      <div class="kpi"><div class="n" id="k-avg">0</div><div class="l">Avg shoppers per ZIP</div></div>
     </div>
 
     <div class="card map-card">
@@ -116,8 +110,7 @@
     </div>
 
     <div class="charts">
-      <div class="card"><h3>Shoppers by vehicle type</h3><canvas id="c-type" height="260"></canvas></div>
-      <div class="card"><h3>New vs Used</h3><canvas id="c-cond" height="260"></canvas></div>
+      <div class="card span2"><h3>Used-vehicle shoppers by vehicle type</h3><canvas id="c-type" height="240"></canvas></div>
       <div class="card span2"><h3>Shoppers by distance from dealership</h3><canvas id="c-ring" height="180"></canvas></div>
       <div class="card span2" id="msa-card" hidden>
         <h3>Metro areas represented</h3>
