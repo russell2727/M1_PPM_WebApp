@@ -127,7 +127,7 @@
       .bindTooltip(`<b>${body.dealership}</b><br>${c.city}, ${c.state} ${c.zip}`).addTo(layer);
     L.marker([c.lat, c.lon], { icon: L.divIcon({ className: "", html: `<div class="dealer-label">${body.dealership}</div>`, iconSize: [0, 0], iconAnchor: [-14, 30] }), interactive: false, zIndexOffset: 1000 }).addTo(layer);
 
-    map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2.3), { padding: [10, 10] });
+    map.fitBounds(L.latLng(c.lat, c.lon).toBounds(radiusM * 2.1), { padding: [10, 10] });
     setTimeout(() => map.invalidateSize(), 50);
   }
 
@@ -176,7 +176,7 @@
       ? new AdvancedMarkerElement({ map, position: center, content: pin, zIndex: 1001 })
       : new google.maps.Marker({ map, position: center, label: { text: body.dealership, color: B.navy, fontSize: "13px", fontWeight: "700", className: "gm-dealer-label" }, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0 }, clickable: false, zIndex: 1001 }));
 
-    map.fitBounds(new google.maps.Circle({ center, radius: radiusM * 1.15 }).getBounds());
+    map.fitBounds(new google.maps.Circle({ center, radius: radiusM * 1.05 }).getBounds(), 0);
   }
 
   function mk(id, type, data, options) {

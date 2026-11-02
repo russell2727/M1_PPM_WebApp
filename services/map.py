@@ -60,7 +60,7 @@ def _google_static(center, radius_mi):
     r_m = radius_mi * 1609.34
     for z in range(16, 6, -1):
         m_per_px = 40075016.686 * math.cos(math.radians(center["lat"])) / (256 * 2 ** z)
-        if r_m / m_per_px * 1.3 <= min(w, h) / 2:
+        if r_m / m_per_px * 1.15 <= h / 2:
             break
     url = ("https://maps.googleapis.com/maps/api/staticmap?"
            f"center={center['lat']},{center['lon']}&zoom={z}&size={w}x{h}&scale={scale}&maptype=roadmap"
@@ -126,8 +126,9 @@ def market_map_png(result: dict, dealership: str, width_px=1600) -> bytes:
         ax.imshow(mosaic, extent=(x0, x1, y1, y0), interpolation="bilinear", alpha=0.95)
     else:
         ax.set_facecolor("#F4F5FA")
-    ax.set_xlim(cx - r_tiles * 1.3, cx + r_tiles * 1.3)
-    ax.set_ylim(cy + r_tiles * 1.3 * 0.8, cy - r_tiles * 1.3 * 0.8)
+    pad = r_tiles * 1.12
+    ax.set_xlim(cx - pad * 1.25, cx + pad * 1.25)   # 5:4 frame, ring fits vertically with margin
+    ax.set_ylim(cy + pad, cy - pad)
     ax.set_aspect("equal")
 
     # bubbles
