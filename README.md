@@ -108,7 +108,23 @@ add a HubSpot Forms API call in `app._record_lead()`.
 
 ---
 
-## 4. Lead notifications
+## 4. Google Maps
+
+Maps JavaScript API draws the market map on screen; Maps Static API supplies the basemap under
+the PDF map. With no keys set the app falls back to Leaflet + CARTO tiles automatically.
+
+1. console.cloud.google.com → New project `m1-ppm-webapp` → **Billing → Link billing account**
+   (Google requires a card on file; the monthly free allowance covers this app's traffic).
+2. **APIs & Services → Library** → enable **Maps JavaScript API** and **Maps Static API**.
+3. **Credentials → Create credentials → API key**, twice:
+   - Browser key → Application restrictions: *Websites* → `https://<service>.onrender.com/*` and your custom
+     domain; API restrictions: *Maps JavaScript API* only → `GOOGLE_MAPS_JS_KEY`
+   - Server key → Application restrictions: *None* (Render egress IPs rotate); API restrictions:
+     *Maps Static API* only → `GOOGLE_MAPS_STATIC_KEY`
+4. Render → Environment → set both keys → Save (auto-redeploys).
+5. Optional: Google Cloud → **Map Management → Create Map ID** with a custom style → `GOOGLE_MAP_ID`.
+
+## 5. Lead notifications
 
 Every report submission fires, in the background, whichever channels have credentials set:
 
@@ -126,7 +142,7 @@ HubSpot → Settings → Integrations → **Private Apps** → Create → scopes
 `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.schemas.contacts.write`,
 `crm.objects.notes.write` → copy the token → Render env `HUBSPOT_TOKEN`.
 
-## 5. Branding
+## 6. Branding
 
 - Logo: drop your PNG at `static/img/m1-logo.png` (header + PDF pick it up automatically; a text wordmark shows until then).
 - Colors: edit `BRAND` in `config.py`. The browser, the charts and the PDF all read from that one dict.
@@ -134,7 +150,7 @@ HubSpot → Settings → Integrations → **Private Apps** → Create → scopes
 
 ---
 
-## 6. Project layout
+## 7. Project layout
 
 ```
 app.py                  Flask routes: / (form+dashboard), POST /api/report, /reports/<pdf>, /healthz

@@ -21,6 +21,7 @@ load_dotenv()
 
 import config  # noqa: E402
 from services import data, mailer, notify, pdf  # noqa: E402
+from services import map as market_map  # noqa: E402
 import threading  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -53,6 +54,8 @@ def index():
         default_radius=config.DEFAULT_RADIUS,
         vehicle_types=data.available_vehicle_types(),
         email_enabled=config.EMAIL_ENABLED,
+        gmaps_key=config.GOOGLE_MAPS_JS_KEY,
+        gmaps_map_id=config.GOOGLE_MAP_ID,
     )
 
 
@@ -98,6 +101,11 @@ def api_report():
     safe_dealer = re.sub(r"[^A-Za-z0-9]+", "_", prospect["dealership"]).strip("_")[:40]
     pdf_name = f"M1_InMarket_Report_{safe_dealer}_{report_id}.pdf"
     pdf_path = pdf.build_pdf(result, prospect, config.OUTPUT_DIR / pdf_name)
+    map_name = pdf_name.replace(".pdf", "_map.png")
+    try:
+        (config.OUTPUT_DIR / map_name).write_bytes(market_map.market_map_png(result, prospect["dealership"]))
+    except Exception:  # noqa: BLE001
+        log.exception("map png failed"); map_name = None
 
     # ---- email + lead capture
     emailed = mailer.send_report(prospect["email"], prospect, result, pdf_path)
@@ -111,6 +119,7 @@ def api_report():
         "ok": True,
         "result": payload,
         "pdf_url": f"/reports/{pdf_name}",
+        "map_url": f"/reports/{map_name}" if map_name else None,
         "emailed": emailed,
     })
 
@@ -126,7 +135,7 @@ def _json_errors(e):
 
 @app.get("/reports/<path:filename>")
 def report_file(filename):
-    if not re.match(r"^M1_InMarket_Report_[A-Za-z0-9_]+\.pdf$", filename):
+    if not re.match(r"^M1_InMarket_Report_[A-Za-z0-9_]+(\.pdf|_map\.png)$", filename):
         abort(404)
     return send_from_directory(config.OUTPUT_DIR, filename, as_attachment=False)
 

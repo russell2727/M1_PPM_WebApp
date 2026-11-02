@@ -20,6 +20,11 @@ services:
       # lines below (and the disk block) to read from a persistent disk instead.
       # - key: DATA_DIR
       #   value: /var/data
+      # --- Google Maps (set values in the dashboard; blank = Leaflet fallback)
+      - key: GOOGLE_MAPS_JS_KEY
+        sync: false
+      - key: GOOGLE_MAPS_STATIC_KEY
+        sync: false
       # --- lead notifications (optional; set values in the dashboard)
       - key: NOTIFY_EMAILS
         value: sales@m1-data.com

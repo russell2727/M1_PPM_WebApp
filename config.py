@@ -67,6 +67,16 @@ BRAND = {
 }
 
 # --------------------------------------------------------------------------
+# GOOGLE MAPS (set as Render environment variables)
+#   GOOGLE_MAPS_JS_KEY     browser key, restricted by HTTP referrer -> Maps JavaScript API
+#   GOOGLE_MAPS_STATIC_KEY server key, restricted to Maps Static API (used for the PDF map)
+#   Leave blank and the app falls back to Leaflet/CARTO automatically.
+# --------------------------------------------------------------------------
+GOOGLE_MAPS_JS_KEY     = os.getenv("GOOGLE_MAPS_JS_KEY", "")
+GOOGLE_MAPS_STATIC_KEY = os.getenv("GOOGLE_MAPS_STATIC_KEY", GOOGLE_MAPS_JS_KEY)
+GOOGLE_MAP_ID          = os.getenv("GOOGLE_MAP_ID", "")   # optional cloud-styled map id
+
+# --------------------------------------------------------------------------
 # EMAIL (set as Render environment variables; leave blank to disable)
 # --------------------------------------------------------------------------
 SMTP_HOST     = os.getenv("SMTP_HOST", "")
